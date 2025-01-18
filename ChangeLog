@@ -1,0 +1,28 @@
+Sat Jan 18 10:56:02 2025  Rob Lauer  <rlauer6@comcast.net>
+
+	[1.0.0 - BigBang/moved from openbedrock]:
+	* .gitignore: new
+	* ChangeLog: new
+	* Makefile: new
+	* README.md: new
+	* buildspec.yml: new
+	* docker-compose.yml: new
+	* extra-files: new
+	* lib/BLM/Redis.pm: new
+	* lib/BLM/Startup/RedisSession.pm: new
+	* lib/Bedrock/Apache/RedisSessionHandler.pm: new
+	* lib/Bedrock/Log/Spooler.pm: new
+	* lib/Bedrock/RedisCache.pm: new
+	* lib/Bedrock/Role/RedisClient.pm: new
+	* provides: new
+	* redis-cache.xml: new
+	* redis-session.xml: new
+	* requires: new
+	* resources: new
+	* t/00-spooler.t: new
+	* t/01-spooler.t: new
+	* t/02-spooler.t: new
+	* test-requires: new
+
+
+

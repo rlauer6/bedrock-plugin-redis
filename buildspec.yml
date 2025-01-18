@@ -1,0 +1,27 @@
+project:
+  description: BLM::Startup::RedisSession
+  author:
+    name: Rob Lauer
+    mailto: rlauer6@comcast.net
+pm_module: BLM::Startup::RedisSession
+min-perl-version: 5.010
+dependencies:
+  requires: requires
+  test_requires: test-requires
+path:
+  pm_module: lib
+  tests: t
+extra-files:
+  - ChangeLog
+  - share:
+      - redis-session.xml
+      - redis-cache.xml
+resources:
+  homepage: http://github.com/rlauer6/bedrock-plugin-redis.git
+  bugtracker:
+    web: http://github.com/rlauer6/bedrock-plugin-redis/issues
+    mailto: rlauer6@comcast.net
+  repository:
+    url: git://github.com/rlauer6/bedrock-plugin-redis.git
+    web: http://github.com/rlauer6/bedrock-plugin.redi
+    type: 'git'

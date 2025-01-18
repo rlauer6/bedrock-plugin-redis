@@ -1,0 +1,6 @@
+Bedrock::Apache::RedisSessionHandler
+Bedrock::Log::Spooler
+Bedrock::RedisCache
+Bedrock::Role::RedisClient
+BLM::Redis
+BLM::Startup::RedisSession
