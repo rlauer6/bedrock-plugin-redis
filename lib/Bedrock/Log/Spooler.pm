@@ -32,6 +32,13 @@ use Carp;
 use Redis;
 
 use JSON -convert_blessed_universally;
+use Readonly;
+
+Readonly::Scalar our $DEFAULT_PORT    => 6379;
+Readonly::Scalar our $DEFAULT_HOST    => 'localhost';
+Readonly::Scalar our $DEFAULT_CHANNEL => 'bedrock.log';
+
+our $VERSION = '1.0.1';
 
 ########################################################################
 sub _new_instance {
@@ -43,15 +50,15 @@ sub _new_instance {
   bless $self, $class;
 
   if ( !$self->channel ) {
-    $self->channel('bedrock/log');
+    $self->channel($DEFAULT_CHANNEL);
   }
 
   if ( !$self->server ) {
-    $self->server('localhost');
+    $self->server($DEFAULT_HOST);
   }
 
   if ( !$self->port ) {
-    $self->port('6379');
+    $self->port($DEFAULT_PORT);
   }
 
   $self->publish_env( $self->publish_env // $FALSE );
@@ -81,8 +88,7 @@ sub publish {
     %details,
     env     => $env,
     time    => time,
-    message => join $EMPTY,
-    @{$log_message},
+    message => join( $EMPTY, @{$log_message} ),
   );
 
   my $channel = $payload{channel} || $self->channel;
@@ -140,15 +146,27 @@ addtional information that could "potentially" be captured from your
 application.
 
 C<Bedrock::Log::Spooler> can help you publish information to a Redis
-channel by adding a call to the C<publish()> method at various points
-in your logger or application.  Then, use a subscriber to receive,
-filter and capture the published events.
+channel. Add a call to the C<publish()> method at various points in
+your logger or application to publish a message.  Then, use a
+subscriber to receive, filter and capture the published events.
 
-   my $redis = Redis(server => 'localhost:6379')->new;
+  my $redis = Redis( server => 'localhost:6379' )->new;
 
-   $redis->psubscribe('foo*', sub { print Dumper [@_] });
+  # subscribe to all "foo" channels!
+  $redis->psubscribe(
+    'foo*',
+    sub {
+      my ( $message, $topic, $subscribed_topic ) = @_;
+      Dumper(
+        [ message          => $message,
+          topic            => $topic,
+          subscribed_topic => $subscribed_topic,
+        ]
+      );
+    }
+  );
 
-   $redis->wait_for_messages(10) while $keep_going;
+  $redis->wait_for_messages(10) while $keep_going;
 
 =head2 redis_client
 
@@ -170,7 +188,7 @@ Name of the channel to publish messages to.
 
 =head2 server
 
-Server name or IP address of Redis server.
+Server name or IP address of the Redis server.
 
 =head2 port
 

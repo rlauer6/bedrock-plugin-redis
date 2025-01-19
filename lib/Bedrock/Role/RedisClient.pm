@@ -34,39 +34,45 @@ Readonly our $DEFAULT_PORT   => 6379;
 Readonly our $DEFAULT_SERVER => 'localhost';
 Readonly our $REDIS_CONFIG   => 'redis-session.xml';
 
-our $VERSION = '@PACKAGE_VERSION@';  ## no critic RequireInterpolationOfMetachars
+our $VERSION = '1.0.1';
 
 our $HANDLE;
 
 ########################################################################
 sub redis_config {
 ########################################################################
-  my ($file) = @_;
+  my (@args) = @_;
 
-  $file //= $ENV{REDIS_CONFIG};
-
-  if ( !$file ) {
-    my @paths;
-
-    for ( grep {defined} $ENV{CONFIG_PATH}, $ENV{BEDROCK_CONFIG_PATH} ) {
-      push @paths, ( $_, "$_.d", "$_.d/startup", "$_.d/plugin" );
-    }
-
-    for (@paths) {
-      $file = sprintf '%s/%s', $_, $REDIS_CONFIG;
-      last if -e $file;
-    }
+  my ( $file, $config );
+  if ( $args[0] && ref $args[0] ) {
+    $config = $args[0];
   }
+  else {
+    $file = $args[0] // $ENV{REDIS_CONFIG};
 
-  $file //= $REDIS_CONFIG;
+    if ( !$file ) {
+      my @paths;
 
-  die "no config file found\n"
-    if !-e $file;
+      for ( grep {defined} $ENV{CONFIG_PATH}, $ENV{BEDROCK_CONFIG_PATH} ) {
+        push @paths, ( $_, "$_.d", "$_.d/startup", "$_.d/plugin" );
+      }
 
-  my $config = eval { return Bedrock::XML->new($file); };
+      for (@paths) {
+        $file = sprintf '%s/%s', $_, $REDIS_CONFIG;
+        last if -e $file;
+      }
+    }
 
-  die sprintf "unable to load config (%s): %s\n", $file, $EVAL_ERROR // q{}
-    if !$config || $EVAL_ERROR;
+    $file //= $REDIS_CONFIG;
+
+    die "no config file found\n"
+      if !-e $file;
+
+    $config = eval { return Bedrock::XML->new($file); };
+
+    die sprintf "unable to load config (%s): %s\n", $file, $EVAL_ERROR // q{}
+      if !$config || $EVAL_ERROR;
+  }
 
   # Redis configuration might be found in:
   # - the 'config' object if redis-session.xml
