@@ -7,8 +7,6 @@ use Data::Dumper;
 use English qw(-no_match_vars);
 use File::Temp;
 use JSON;
-use LWP::UserAgent;
-use HTTP::Request;
 
 use Test::More qw(no_plan);
 

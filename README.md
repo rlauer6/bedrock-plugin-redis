@@ -10,7 +10,7 @@ BLM::Startup::RedisSession - Redis based sessions
 
 # DESCRIPTION
 
-Provides a pesistent session store for anonymous or login session.
+Provides a pesistent session store for anonymous or login sessions.
 See [BLM::Startup::UserSession](https://metacpan.org/pod/BLM%3A%3AStartup%3A%3AUserSession) for more details on sessions.
 
 Using a memory cache like Redis for session management offers several
@@ -34,11 +34,10 @@ advantages over using a traditional database:
 
 - Simplicity and Efficiency
 
-    Redis is optimized for storing and
-    retrieving small, frequently accessed data structures such as session
-    information. Its simple key-value data model and support for data
-    structures like sets, lists, and hashes make it efficient for storing
-    session-related data.
+    Redis is optimized for storing and retrieving small, frequently
+    accessed data structures such as session information. Its simple
+    key-value data model and support for data structures like sets, lists,
+    and hashes make it efficient for storing session-related data.
 
 - Persistence Options
 
@@ -58,19 +57,19 @@ advantages over using a traditional database:
 
 - Atomic Operations
 
-    Redis supports atomic operations on data
-    structures, which ensures that session management operations like
-    creating, updating, or deleting sessions are performed
-    atomically. This helps maintain data consistency and prevents race
-    conditions that can occur in distributed systems.
+    Redis supports atomic operations on data structures, which ensures
+    that session management operations like creating, updating, or
+    deleting sessions are performed atomically. This helps maintain data
+    consistency and prevents race conditions that can occur in distributed
+    systems.
 
 - Ease of Integration
 
-    Redis has client libraries available for a wide
-    range of programming languages, making it easy to integrate into
-    various types of applications. Many web frameworks and platforms have
-    built-in support for Redis, simplifying the process of incorporating
-    it into your application architecture.
+    Redis has client libraries available for a wide range of programming
+    languages, making it easy to integrate into various types of
+    applications. Many web frameworks and platforms have built-in support
+    for Redis, simplifying the process of incorporating it into your
+    application architecture.
 
     Overall, Redis offers a powerful and efficient solution for session
     management, particularly in applications where performance,
@@ -112,7 +111,7 @@ _Note that you can only have one session class bound to the `$session` object._
 Implements the bare minimium methods for session management using a
 Redis server. See [BLM::Startup:SessionManager](https://metacpan.org/pod/BLM%3A%3AStartup%3ASessionManager) for more details on
 how sessions work and what methods are available. This class uses the
-[Bedrock::RedisClient](https://metacpan.org/pod/Bedrock%3A%3ARedisClient) role.
+[Bedrock::Role::RedisClient](https://metacpan.org/pod/Bedrock%3A%3ARole%3A%3ARedisClient) role.
 
 ## FETCH\_SESSION
 

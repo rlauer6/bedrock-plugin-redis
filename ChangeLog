@@ -1,3 +1,41 @@
+Sat Jan 18 19:38:48 2025  Rob Lauer  <rlauer6@comcast.net>
+
+	[1.0.1]:
+	* README.md: generated
+	* lib/BLM/Redis.pm
+	- pod updates
+	(publish): new
+	(metadata): new
+	(serialization_method): refactored
+	(set_key): expire
+	(get_key): don't export if raw
+	* lib/BLM/Startup/RedisSession.pm
+	- added Bedrock::Logger
+	- pod updates
+	(CONNECT)
+	- use config object for connet
+	- use handle()
+	- set log level from config
+	(FETCH_SESSION): likewise
+	(STORE_SESSION): likewise, return $TRUE
+	(KILL_SESSION): use handle
+	(login): new
+	(load_users): new
+	(verify_password): new
+	(register): new
+	(fetch_users): new
+	(logout): new
+	(remove_user): new
+	(create_salt): new
+	* t/05-blm-redis.t: new
+	* t/04-redis-session.t: new
+	* t/03-spooler.t: new
+	* lib/Bedrock/Log/Spooler.pm
+	- slight refactoring
+	- pod updates
+	* lib/Bedrock/Role/RedisClient.pm
+	(redis_config): accept config object
+
 Sat Jan 18 10:56:02 2025  Rob Lauer  <rlauer6@comcast.net>
 
 	[1.0.0 - BigBang/moved from openbedrock]:
