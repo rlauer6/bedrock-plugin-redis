@@ -155,7 +155,7 @@ __END__
 
 =head1 PUBLIC
 
-Bedrock::RedisCache - provides a wrapper class of Redis for Bedrock caching
+Bedrock::RedisCache - provides a wrapper class around Redis for Bedrock caching
 
 =head1 SYNOPSIS
 
@@ -174,7 +174,7 @@ If your pages may be I<somewhat> static you might want to set a cache
 expiration value (ttl).
 
 The primary purpose of this class is to provide support for page
-caching, but you can use if for whatever you'd like in your
+caching, but you can use it for whatever you'd like in your
 applications (see below).  L<Bedrock::Apache::Bedrock> will
 instantiate this class once for each Apache child when that class is
 loaded in response to a request.  If the handler is able to connect to
@@ -182,8 +182,8 @@ a Redis server then the instatiated object will be stored in Bedrock's
 context object (L<Bedrock::Context>) and is therefore available
 throughout Bedrock wherever the context object can be found (use the
 C<redis()> method of the context object).  That's a fancy way of
-saying you may have dig into Bedrock internals if you are trying use
-the Redis cache through that object.
+saying you may have to dig a bit into Bedrock internals if you are
+trying use the Redis cache through that object.
 
 A more direct way of accessing the object can be created using an
 Application Plugin which gives direct access to the context object via
@@ -306,7 +306,8 @@ The C<--cached> boolean operator can be used to determine if a key is in the cac
 
 =head1 CONFIGURATION
 
-Configure the class by creating a JSON file with the configuration values listed below.
+Configure the class by creating a JSON file with the configuration
+values listed below.
 
 The configuration object will be passed to the C<new()> constructor
 the first time an Apache child responds to a request.
@@ -316,7 +317,7 @@ below in the constructor or pass a hash reference containing the
 values.
 
  {
-   "host" : "10.1.4.100",
+   "host" : "127.0.0.1",
    "socket" : "",
    "port" : "6379",
    "cache" : [
@@ -414,6 +415,8 @@ interval the page will be deleted from the cache.
 =back
 
 =head1 METHODS AND SUBROUTINES
+
+This module is 
 
 =head1 SEE OTHER
 

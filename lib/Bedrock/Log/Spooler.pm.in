@@ -38,7 +38,7 @@ Readonly::Scalar our $DEFAULT_PORT    => 6379;
 Readonly::Scalar our $DEFAULT_HOST    => 'localhost';
 Readonly::Scalar our $DEFAULT_CHANNEL => 'bedrock.log';
 
-our $VERSION = '1.0.1';
+our $VERSION = '@PACKAGE_VERSION@';
 
 ########################################################################
 sub _new_instance {
@@ -93,8 +93,7 @@ sub publish {
 
   my $channel = $payload{channel} || $self->channel;
 
-  return $self->redis_client->publish( $channel,
-    to_json( \%payload, { allow_blessed => $TRUE, convert_blessed => $TRUE } ) );
+  return $self->redis_client->publish( $channel, to_json( \%payload, { allow_blessed => $TRUE, convert_blessed => $TRUE } ) );
 }
 
 {

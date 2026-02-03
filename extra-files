@@ -1,3 +1,4 @@
 ChangeLog /ChangeLog
 redis-session.xml share/redis-session.xml
 redis-cache.xml share/redis-cache.xml
+redis-keys.roc share/redis-keys.roc

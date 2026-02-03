@@ -1,3 +1,22 @@
+Tue Feb  3 16:47:03 2026  Rob Lauer  <rclauer@gmail.com>
+
+	[1.0.2]:
+	* Makefile
+	- add VERSION
+	- make files from .pm.in
+	* buildspec.xml
+	- add redis-keys.roc
+	- email address
+	* .gitignore: new
+	* lib/Bedrock/RedisCache.pm.in
+	- pod updates
+	* resources: email address
+	* t/04-redis-session.t
+	- whitespace
+	- remove Dumper messages
+	* t/05-blm-redis.t: likewise
+	* extra-files: redis-keys.roc
+
 Sat Jan 18 19:38:48 2025  Rob Lauer  <rlauer6@comcast.net>
 
 	[1.0.1]:

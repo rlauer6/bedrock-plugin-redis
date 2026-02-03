@@ -78,13 +78,7 @@ my $module_config = get_module_config;
 
 my $ctx = Faux::Context->new( CONFIG => { SESSION_DIR => tempdir( CLEANUP => 1 ) } );
 
-my $session = eval {
-  return bind_module(
-    context => $ctx,
-    config  => $module_config,
-    module  => 'BLM::Startup::RedisSession'
-  );
-};
+my $session = eval { return bind_module( context => $ctx, config => $module_config, module => 'BLM::Startup::RedisSession' ); };
 
 plan skip_all => 'no Redis server'
   if $EVAL_ERROR && $EVAL_ERROR =~ /connect/xsm;
@@ -161,13 +155,7 @@ subtest 'save' => sub {
 ########################################################################
   $ENV{session} = $session_id;
 
-  $session = eval {
-    return bind_module(
-      context => $ctx,
-      config  => $module_config,
-      module  => 'BLM::Startup::RedisSession'
-    );
-  };
+  $session = eval { return bind_module( context => $ctx, config => $module_config, module => 'BLM::Startup::RedisSession' ); };
 
   is( $session->{foo}, 'bar', 'session saved' )
     or diag( Dumper( [$session] ) );
@@ -236,8 +224,8 @@ subtest 'register' => sub {
 
   ok( keys %{$users}, '1 user registered' );
 
-  $session->login( 'wflintstone', 'FredB1rd' );
-  diag( Dumper( [ session => $session ] ) );
+  $session->login( 'wflintstone', 'FredB1rd' )
+    or diag( Dumper( [ session => $session ] ) );
 };
 
 ########################################################################

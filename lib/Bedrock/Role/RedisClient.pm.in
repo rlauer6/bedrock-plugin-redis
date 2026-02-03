@@ -34,7 +34,7 @@ Readonly our $DEFAULT_PORT   => 6379;
 Readonly our $DEFAULT_SERVER => 'localhost';
 Readonly our $REDIS_CONFIG   => 'redis-session.xml';
 
-our $VERSION = '1.0.1';
+our $VERSION = '@PACKAGE_VERSION@';
 
 our $HANDLE;
 

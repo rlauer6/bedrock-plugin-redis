@@ -125,9 +125,8 @@ subtest 'storable' => sub {
 
   $obj = $BLM->get_key('bedrock_hash');
 
-  isa_ok( $obj, 'Bedrock::Hash' );
-
-  diag( Dumper( [ keys => $obj->keys() ] ) );
+  isa_ok( $obj, 'Bedrock::Hash' )
+   or diag( Dumper( [ keys => $obj->keys() ] ) );
 };
 
 ########################################################################
