@@ -1,6 +1,6 @@
 package BLM::Startup::RedisSession;
 
-#    Copyright (C) 2024, TBC Development Group, LLC.
+#    Copyright (C) 2026, TBC Development Group, LLC.
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -17,26 +17,27 @@ package BLM::Startup::RedisSession;
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
 
-use parent qw(BLM::Startup::BaseSession);
-
 use strict;
 use warnings;
 
 use Bedrock qw(to_loglevel);
-
-use Bedrock::Constants qw(:booleans);
+use Bedrock::Constants qw(:booleans $SECONDS_IN_A_DAY);
+use Bedrock::XML qw(writeXMLString);
 use Carp;
+use Crypt::URandom qw(urandom);
 use Data::Dumper;
+use Digest::SHA qw(sha256_hex);
 use English qw(-no_match_vars);
 use Redis;
 use Scalar::Util qw(reftype);
-use Digest::SHA qw(sha256_hex);
 
 use Role::Tiny::With;
 with 'Bedrock::Role::RedisClient';
 with 'Bedrock::Logger';
 
 our $VERSION = '@PACKAGE_VERSION@';
+
+use parent qw(BLM::Startup::BaseSession);
 
 # Provide a "namespace" for the keys that we will be storing into Redis
 ########################################################################
@@ -69,7 +70,7 @@ sub CONNECT {
 
   get_logger()->level($loglevel);
 
-  my $handle = eval { return redis_connect($config) };
+  my $handle = eval { return $self->redis_connect($config) };
 
   die sprintf 'could not create handle to Redis for: %s', $EVAL_ERROR
     if !$handle || $EVAL_ERROR;
@@ -114,6 +115,7 @@ sub FETCH_SESSION {
     )
   );
 
+  # for consistency with other session managers that return user info
   return [ undef, undef, undef, undef, $data ];
 }
 
@@ -191,16 +193,19 @@ sub login {
   delete $self->{new_session};
 
   # Save the merged prefs and the session id
-  my $prefs = Bedrock::XML::writeXMLString( $self->{data}->{prefs} );
+  my $prefs = $self->{data}->{prefs};
+  my $data  = { prefs => ref $prefs ? writeXMLString($prefs) : $prefs };
 
-  die "could not store session\n"
-    if !$self->STORE_SESSION(
+  my $retval = $self->STORE_SESSION(
     session  => $session,
-    data     => { prefs => $prefs },
+    data     => $data,
     expires  => $self->{expires},
     username => $username,
     config   => $self->{config},
-    );
+  );
+
+  die "ERROR: could not store session\n"
+    if !$retval;
 
   return $session;
 }
@@ -288,7 +293,7 @@ sub logout {
     $self->cookie(
       $self->{name},
       value   => 'killed',
-      expires => -86_400,
+      expires => -$SECONDS_IN_A_DAY,
     );
 
     $self->send_cookie;
@@ -307,7 +312,7 @@ sub logout {
 ########################################################################
 sub remove_user {
 ########################################################################
-  my ( $obj, $username ) = @_;
+  my ( $obj, $username, $password ) = @_;  # not used in this implementation
 
   my $self = tied %{$obj} || $obj;
 
@@ -325,11 +330,7 @@ sub create_salt {
 ########################################################################
   my ($self) = @_;
 
-  my @chars = ( '0' .. '9', 'a' .. 'f' );
-
-  my @salt = map { $chars[ int rand 16 ] } ( 0 .. 63 );
-
-  return join q{}, @salt;
+  return unpack 'H*', urandom(32);
 }
 
 ########################################################################
@@ -510,9 +511,9 @@ cookie expiration time.
 
 Andy Layton
 
-Rob Lauer - rlauer6@comcast.net
+Rob Lauer - rlauer@treasurersbriefcase.com
 
-=head1 SEE OTHER
+=head1 SEE ALSO
 
 L<Bedrock::RedisClient>, L<BLM::Startup::BaseSession>, L<BLM::Startup::SessionManager>
 L<Bedrock::Apache::RedisSessionHandler>

@@ -23,6 +23,7 @@ use warnings;
 use Role::Tiny::With;
 with 'Bedrock::Role::RedisClient';
 
+use Bedrock qw(:booleans);
 use Bedrock::XML;
 use Digest::MD5 qw(md5_hex);
 use English qw(-no_match_vars);
@@ -74,14 +75,14 @@ sub init_plugin {
 
     # <plugin:Redis --options=>
     return $redis_options
-      if $redis_options && reftype($redis_options) eq 'HASH';
+      if is_hash($redis_options);
 
     # <plugin:Redis> (uses $config object)
     return $self->get__config->{redis}
       if $self->get__config->{redis};
 
     # <plugin:Redis> (hunt for a .xml configuration file)
-    return redis_config();
+    return $self->redis_config();
   };
 
   if ( !$config || $EVAL_ERROR ) {
@@ -109,7 +110,7 @@ sub init_plugin {
 
   my $redis_config = $self->set_config($config);
 
-  my $handle = $self->set_handle( redis_connect($redis_config) );
+  my $handle = $self->set_handle( $self->redis_connect($redis_config) );
 
   $self->set__serialize( \&serialize );
 

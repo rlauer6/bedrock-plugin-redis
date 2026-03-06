@@ -24,5 +24,5 @@ resources:
     mailto: rlauer@treasurersbriefcase.com
   repository:
     url: git://github.com/rlauer6/bedrock-plugin-redis.git
-    web: http://github.com/rlauer6/bedrock-plugin.redi
+    web: http://github.com/rlauer6/bedrock-plugin.redis
     type: 'git'

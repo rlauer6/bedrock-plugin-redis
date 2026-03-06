@@ -1,10 +1,6 @@
 package Bedrock::Role::RedisClient;
 
-#
-#    This file is a part of Bedrock, a server-side web scripting tool.
-#    Check out http://www.openbedrock.net
-#    Copyright (C) 2001, Charles Jones, LLC.
-#    Copyright (C) 2024, TBC Development Group, LLC.
+#    Copyright (C) 2026, TBC Development Group, LLC.
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -23,16 +19,19 @@ package Bedrock::Role::RedisClient;
 
 use Role::Tiny;
 
-use Bedrock::XML;
+use Bedrock::XML qw(loadXML loadXMLFile writeXMLString);
 use Data::Dumper;
 use English qw(-no_match_vars);
 use Redis;
 
 use Readonly;
 
-Readonly our $DEFAULT_PORT   => 6379;
-Readonly our $DEFAULT_SERVER => 'localhost';
-Readonly our $REDIS_CONFIG   => 'redis-session.xml';
+Readonly::Scalar our $DEFAULT_PORT             => 6379;
+Readonly::Scalar our $DEFAULT_SERVER           => 'localhost';
+Readonly::Scalar our $REDIS_CONFIG             => 'redis-session.xml';
+Readonly::Scalar our $RECONNECT_RETRIES        => 5;
+Readonly::Scalar our $RECONNECT_RETRY_INTERVAL => 500_000;
+Readonly::Scalar our $DEFAULT_NAMESPACE        => 'bedrock:session';
 
 our $VERSION = '@PACKAGE_VERSION@';
 
@@ -41,9 +40,13 @@ our $HANDLE;
 ########################################################################
 sub redis_config {
 ########################################################################
-  my (@args) = @_;
+  my ( $self, @args ) = @_;
+
+  return $self->{config}
+    if $self->{config};
 
   my ( $file, $config );
+
   if ( $args[0] && ref $args[0] ) {
     $config = $args[0];
   }
@@ -68,26 +71,28 @@ sub redis_config {
     die "no config file found\n"
       if !-e $file;
 
-    $config = eval { return Bedrock::XML->new($file); };
+    $config = eval { return loadXMLFile($file) };
 
     die sprintf "unable to load config (%s): %s\n", $file, $EVAL_ERROR // q{}
       if !$config || $EVAL_ERROR;
   }
 
-  # Redis configuration might be found in:
-  # - the 'config' object if redis-session.xml
-  # - the 'redis' object if Bedrock's global config
-  # - the root object if reading redis.xml
-  return $config->{config} // $config->{redis} // $config;
+  return $self->{config} = $config->{config} // $config->{redis} // $config;
 }
 
 ########################################################################
 sub redis_connect {
 ########################################################################
-  my (@args) = @_;
+  my ( $self, @args ) = @_;
 
-  return $HANDLE
-    if $HANDLE;
+  return $self->{_redis_handle}
+    if $self->{_redis_handle};
+
+  if ($HANDLE) {
+    $self->{_redis_handle} = $HANDLE;
+
+    return $self->{_redis_handle};
+  }
 
   my $config = ref $args[0] ? $args[0] : {@args};
 
@@ -99,7 +104,16 @@ sub redis_connect {
     $config->{server} = sprintf '%s:%s', @{$config}{qw(server port)};
   }
 
-  $HANDLE = Redis->new( %{$config} );
+  my %redis_args;
+
+  @redis_args{qw(name server sock debug reconnect every)}
+    = @{$config}{qw(name server sock debug reconnect every)};
+
+  $redis_args{reconnect} //= $RECONNECT_RETRIES;
+  $redis_args{every}     //= $RECONNECT_RETRY_INTERVAL;
+
+  $HANDLE = Redis->new(%redis_args);
+  $self->{_redis_handle} = $HANDLE;
 
   return $HANDLE;
 }
@@ -107,27 +121,29 @@ sub redis_connect {
 ########################################################################
 sub redis_key {
 ########################################################################
-  my ($session_id) = @_;
+  my ( $self, $session_id ) = @_;
 
-  return 'bedrock:session:' . $session_id;
+  my $config    = $self->redis_config;
+  my $namespace = $config->{namespace} // $DEFAULT_NAMESPACE;
+
+  return "$namespace:$session_id";
 }
 
 ########################################################################
 sub redis_session {
 ########################################################################
-  my ( $session_key, @args ) = @_;
+  my ( $self, $session_key, @args ) = @_;
 
-  my $redis = redis_connect;
-
-  my $session;
+  my $redis = $self->redis_connect;
 
   if (@args) {
     my $session_ref = ref $args[0] ? $args[0] : {@args};
-    my $session     = Bedrock::XML::writeXML($session_ref);
 
-    my $config = redis_config->{config};
+    my $session_as_xml = writeXMLString($session_ref);
 
-    $redis->set( $session_key, $session, );
+    my $config = $self->redis_config;
+
+    $redis->set( $session_key, $session_as_xml, );
     $redis->expire( $session_key, $config->{cookie}->{expiry_secs} );
 
     return $session_ref;
@@ -136,21 +152,18 @@ sub redis_session {
   return
     if !$redis->exists($session_key);
 
-  return eval { return Bedrock::XML->newFromString( $redis->get($session_key) ); };
+  return eval { return loadXML( $redis->get($session_key) ); };
 }
 
 ########################################################################
 sub redis_handle {
 ########################################################################
-  return $HANDLE
-    if $HANDLE;
+  my ($self) = @_;
 
-  $HANDLE = redis_connect();
+  return $self->{_redis_handle}
+    if $self->{_redis_handle};
 
-  die $EVAL_ERROR
-    if !$HANDLE;
-
-  return $HANDLE;
+  return $self->redis_connect;
 }
 
 1;
@@ -167,18 +180,19 @@ Bedrock::RedisClient - role to provide common methods for connecting to Redis se
 
 =head1 SYNOPSIS
 
+ package MyRedisApp;
+
  use Role::Tiny:With;
  with 'Bedrock::Role::RedisClient';
 
- my $redis = redis_handle();
+ ...
+ my $redis = $self->redis_handle();
 
 =head1 DESCRIPTION
 
 Implements a role used by L<BLM::Startup::RedisSession>,
-L<Bedrock::Apache::RedisSessionHandler> that provides some methods
-used by both of these modules.
-
-A Bedrock session using Redis.
+L<Bedrock::Apache::RedisSessionHandler>, L<BLM::Redis> (and possibly
+you) that provides methods used for accessing a Redis server.
 
 =head1 METHODS AND SUBROUTINES
 
@@ -229,7 +243,7 @@ configuaration object as 'redis'.
  </object>
 
 I<Note that you can place any valid configuration setting supported by
-the L<Redis> class.>
+the L<Redis> class in your configuration object.>
 
 =item
 
@@ -279,10 +293,10 @@ Returns a reference to a hash that represents a user's session.
 
 =head1 AUTHOR
 
-BIGFOOT - <bigfoot@cpan.org>
+Rob Lauer - <rlauer@treasurersbriefcase.com>
 
-=head1 SEE OTHER
+=head1 SEE ALSO
 
-L<BLM::Startup::RedisSession>, L<Redis>, L<Bedrock::Apache::RedisSessionManager>
+L<BLM::Startup::RedisSession>, L<Redis>, L<Bedrock::Apache::RedisSessionManager>, L<BLM::Redis>
 
 =cut

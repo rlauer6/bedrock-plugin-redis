@@ -1,12 +1,12 @@
 {
-   "homepage" : "http://github.com/rlauer6/bedrock-plugin-redis.git",
-   "bugtracker" : {
-      "web" : "http://github.com/rlauer6/bedrock-plugin-redis/issues",
-      "mailto" : "rlauer@treasurersbriefcase.com"
-   },
    "repository" : {
-      "url" : "git://github.com/rlauer6/bedrock-plugin-redis.git",
       "type" : "git",
-      "web" : "http://github.com/rlauer6/bedrock-plugin.redi"
-   }
+      "url" : "git://github.com/rlauer6/bedrock-plugin-redis.git",
+      "web" : "http://github.com/rlauer6/bedrock-plugin.redis"
+   },
+   "bugtracker" : {
+      "mailto" : "rlauer@treasurersbriefcase.com",
+      "web" : "http://github.com/rlauer6/bedrock-plugin-redis/issues"
+   },
+   "homepage" : "http://github.com/rlauer6/bedrock-plugin-redis.git"
 }

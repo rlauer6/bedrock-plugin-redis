@@ -131,9 +131,9 @@ cookie expiration time.
 
 Andy Layton
 
-Rob Lauer - rlauer6@comcast.net
+Rob Lauer - rlauer@treasurersbriefcase.com
 
-# SEE OTHER
+# SEE ALSO
 
 [Bedrock::RedisClient](https://metacpan.org/pod/Bedrock%3A%3ARedisClient), [BLM::Startup::BaseSession](https://metacpan.org/pod/BLM%3A%3AStartup%3A%3ABaseSession), [BLM::Startup::SessionManager](https://metacpan.org/pod/BLM%3A%3AStartup%3A%3ASessionManager)
 [Bedrock::Apache::RedisSessionHandler](https://metacpan.org/pod/Bedrock%3A%3AApache%3A%3ARedisSessionHandler)

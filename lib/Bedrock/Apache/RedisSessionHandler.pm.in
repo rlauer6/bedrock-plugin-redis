@@ -5,7 +5,7 @@ use warnings;
 
 use Apache2::RequestRec ();  # $r
 use Apache2::Connection ();  # $r->connection
-use APR::Table          ();  # $r->headers_in
+use APR::Table ();  # $r->headers_in
 
 use Apache2::Const -compile => qw(OK
   DECLINED
@@ -31,9 +31,9 @@ use English qw(-no_match_vars);
 ########################################################################
 sub redirect {
 ########################################################################
-  my ($r) = @_;
+  my ( $self, $r ) = @_;
 
-  my $login_url = redis_config()->{config}->{login_url} // '/index.html';
+  my $login_url = $self->redis_config->{login_url} // '/index.html';
 
   $r->headers_out->{Location} = $login_url;
 
@@ -45,7 +45,7 @@ sub redirect {
 ########################################################################
 sub is_session_valid {
 ########################################################################
-  my ($r) = @_;
+  my ( $self, $r ) = @_;
 
   my $cookie = $r->headers_in->{Cookie};
 
@@ -55,30 +55,31 @@ sub is_session_valid {
     if !$cookie;
 
   my $session_id;
+  my $cookie_name = $self->redis_config->{param} // 'session';
 
-  if ( $cookie =~ /session=(\w*)/xsm ) {
+  if ( $cookie =~ /\b\Q$cookie_name\E=(\w+)/xsm ) {
     $session_id = $1;
 
     $r->log->debug( 'found a session cookie: ' . $session_id );
   }
 
-  my $session_key = redis_key($session_id);
+  my $session_key = $self->redis_key($session_id);
 
-  my $redis = redis_handle();
+  my $redis = $self->redis_handle();
 
   return
     if !$redis->exists($session_key);
 
   $r->log->debug( 'found a session: ' . Dumper($session_key) );
 
-  my $session = redis_session($session_key);
+  my $session = $self->redis_session($session_key);
 
   return
     if !$session;
 
   $r->log->debug( 'found an active session' . Dumper($session_key) );
 
-  my $username = redis_config()->{config}->{username};
+  my $username = $self->redis_config->{username};  # the key name for username
 
   return $session->{$username};
 }
@@ -88,12 +89,9 @@ sub handler {
 ########################################################################
   my ($r) = @_;
 
-  if ( is_session_valid($r) ) {
-    return Apache2::Const::OK;
-  }
-  else {
-    return redirect($r);
-  }
+  my $self = bless {}, __PACKAGE__;
+
+  return $self->is_session_valid($r) ? Apache2::Const::OK : $self->redirect($r);
 }
 
 1;
@@ -154,10 +152,10 @@ they have already been logged in.
 
 =head1 AUTHOR
 
-Rob Lauer - rclauer@gmail.com
+Rob Lauer - rlauer@treasurersbriefcase.com
 
-=head1 SEE OTHER
+=head1 SEE ALSO
 
-L<Bedrock::RedisClient>, L<BLM::Startup::RedisSession>, L<Redis>
+L<Bedrock::Role::RedisClient>, L<BLM::Startup::RedisSession>, L<Redis>
 
 =cut
